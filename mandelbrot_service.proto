@@ -11,7 +11,7 @@ service MandelbrotService {
     rpc NotifyTrainingComplete(TrainingCompleteNotify) returns (SignalResponse); 
     rpc SyncStep(SyncRequest) returns (SyncResponse); 
     
-    // 新增：Layer参数同步相关方法
+    // Added: Methods for synchronizing layer parameters
     rpc SyncLayerParameters(LayerParameterSyncRequest) returns (LayerParameterSyncResponse);
     rpc GetSyncParameters(SyncParameterRequest) returns (SyncParameterResponse);
     rpc RegisterAndGetUniqueId(UniqueIdRequest) returns (UniqueIdResponse);
@@ -20,37 +20,37 @@ service MandelbrotService {
 } 
 
 message UniqueIdRequest {
-    string worker_id = 1;    // 客户端的唯一标识 (Worker ID)
-    int32 local_rank = 2;           // 客户端的本地 Rank (可选，方便 Server 记录拓扑)
-    int64 timestamp = 3;            // 发起请求的时间戳
+    string worker_id = 1;    // Unique client identifier (Worker ID)
+    int32 local_rank = 2;           // Client's local rank (optional; helps the server record the topology)
+    int64 timestamp = 3;            // Timestamp when the request was initiated
 }
 
 message UniqueIdResponse {
-    // 请求是否成功 (例如：节点注册成功、等待其他节点加入等)
+    // Whether the request succeeded (for example, the node registered or is waiting for other nodes)
     bool success = 1;
 
-    // 响应消息，用于向客户端反馈详细状态或错误原因
+    // Response message containing detailed status or error information for the client
     string message = 2;
 
-    // 【新增】主节点 IP 地址，供客户端建立 TCP 连接或初始化分布式环境
+    // Added: Master node IP address for establishing TCP connections or initializing the distributed environment
     string master_addr = 3;
 
-    // 【新增】主节点通信端口
+    // Added: Master node communication port
     int32 master_port = 4;
 
-    // Server 确认并分配给 Client 的全局 Rank (防止 Client 自行计算导致冲突)
+    // Global rank confirmed and assigned to the client by the server (prevents conflicts from client-side calculation)
     int32 client_global_rank = 5;
 
-    // Server 自身的全局 Rank
+    // Server's global rank
     int32 server_global_rank = 6;
 
-    // Server 的唯一 Worker ID，便于客户端日志追踪与调试
+    // Server's unique Worker ID for client-side logging and debugging
     string server_worker_id = 7;
 
-    // 客户端预期的 World Size，用于 Server 校验集群节点是否已完全到齐
+    // Expected world size, used by the server to verify that all cluster nodes have joined
     int32 world_size = 8;
 
-    // 响应的时间戳 (Unix 毫秒时间戳)，用于网络延迟评估与超时控制
+    // Response timestamp (Unix milliseconds), used for network latency evaluation and timeout control
     int64 timestamp = 9;
 }
 
@@ -95,11 +95,11 @@ message TrainingCompleteNotify {
 } 
 
 message SomeRequest { 
-    // 核心输入张量
+    // Core input tensors
     bytes hidden_states = 1; 
     repeated int64 hidden_states_shape = 2; 
-    string hidden_states_dtype = 3;     // 新增：数据类型 (如 "float16", "bfloat16")
-    string server_worker_id = 4;        // Server 端 Worker ID
+    string hidden_states_dtype = 3;     // Added: Data type (for example, "float16" or "bfloat16")
+    string server_worker_id = 4;        // Server-side Worker ID
     
     bytes attention_mask = 5; 
     repeated int64 attention_mask_shape = 6; 
@@ -107,24 +107,24 @@ message SomeRequest {
     bytes position_ids = 7; 
     repeated int64 position_ids_shape = 8; 
      
-    // KV Cache 相关
+    // KV cache
     repeated bytes past_keys = 9; 
     repeated bytes past_values = 10; 
     repeated int64 kv_shapes = 11; 
      
-    // 控制标志
+    // Control flags
     bool output_attentions = 12; 
     bool use_cache = 13; 
      
-    // 其他参数
+    // Other parameters
     repeated int32 mor_layer_ids = 14; 
      
-    // 扩展字段 (16+)
+    // Extension fields (16+)
     repeated StringBytesEntry out_middle_proj = 16; 
     repeated Int64ListEntry out_middle_proj_shapes = 17; 
     repeated StringBytesEntry kwargs = 18; 
      
-    // 路由与元数据
+    // Routing and metadata
     int32 block_idx = 19; 
     string worker_id = 20; 
     int64 step = 21; 
@@ -157,30 +157,30 @@ message SyncResponse {
 } 
 
 // ============================================================
-// 新增：Layer参数同步相关消息定义
+// Added: Message definitions for layer parameter synchronization
 // ============================================================
 
-// Layer参数同步请求（同步layer_idx、worker_id、bMax_frequency）
+// Layer parameter synchronization request (synchronizes layer_idx, worker_id, and bMax_frequency)
 message LayerParameterSyncRequest {
-    string worker_id = 1;             // 客户端ID（ID）
-    int32 batch_size = 2;        // 分布式训练的起始块索引
-    int32 layer_idx = 3;              // 层索引（layer_idx）
-    bool b_max_frequency = 4;         // bMax_frequency参数值
-    int64 step = 5;                   // 当前训练步骤
-    int64 timestamp = 6;              // 时间戳
-    bytes additional_data = 7;        // 额外数据（如果需要）
-    bool use_gradient_checkpointing = 8;         //梯度检查模式
+    string worker_id = 1;             // Client ID
+    int32 batch_size = 2;        // Starting block index for distributed training
+    int32 layer_idx = 3;              // Layer index (layer_idx)
+    bool b_max_frequency = 4;         // Value of the bMax_frequency parameter
+    int64 step = 5;                   // Current training step
+    int64 timestamp = 6;              // Timestamp
+    bytes additional_data = 7;        // Additional data (if needed)
+    bool use_gradient_checkpointing = 8;         // Gradient checkpointing mode
     repeated int64 tensor_shape = 9; 
     string tensor_dtype = 10;  
     bool use_nccl = 11;
 }
 
-// Layer参数同步响应
+// Layer parameter synchronization response
 message LayerParameterSyncResponse {
-    bool success = 1;                 // 同步是否成功
-    string message = 2;               // 响应消息
-    string worker_id = 3;             // 客户端ID（ID）
-    int64 timestamp = 4;              // 时间戳
+    bool success = 1;                 // Whether synchronization succeeded
+    string message = 2;               // Response message
+    string worker_id = 3;             // Client ID
+    int64 timestamp = 4;              // Timestamp
     bool use_nccl = 5;
     bool use_gradient_checkpointing =6;
     bool use_triple = 7;
@@ -190,101 +190,101 @@ message LayerParameterSyncResponse {
     int32 save_steps=11;
 }
 
-// 同步参数请求
+// Synchronization parameter request
 message SyncParameterRequest {
-    string worker_id = 1;             // 客户端ID
-    int32 requested_layer_idx = 2;    // 请求的层索引（可选）
-    int64 timestamp = 3;              // 时间戳
+    string worker_id = 1;             // Client ID
+    int32 requested_layer_idx = 2;    // Requested layer index (optional)
+    int64 timestamp = 3;              // Timestamp
 }
 
-// 同步参数响应
+// Synchronization parameter response
 message SyncParameterResponse {
-    bool success = 1;                 // 请求是否成功
-    string message = 2;               // 响应消息
-    repeated SyncedParameterEntry parameters = 3; // 同步的参数列表
-    int64 timestamp = 4;              // 时间戳
+    bool success = 1;                 // Whether the request succeeded
+    string message = 2;               // Response message
+    repeated SyncedParameterEntry parameters = 3; // List of synchronized parameters
+    int64 timestamp = 4;              // Timestamp
 }
 
-// 同步参数条目
+// Synchronized parameter entry
 message SyncedParameterEntry {
-    string worker_id = 1;             // 工作节点ID（ID）
-    int32 layer_idx = 2;              // 层索引（layer_idx）
-    bool b_max_frequency = 3;         // bMax_frequency值
-    int64 last_updated_step = 4;      // 最后更新步骤
-    int64 timestamp = 5;              // 时间戳
-    bool is_active = 6;               // 是否活跃
+    string worker_id = 1;             // Worker node ID
+    int32 layer_idx = 2;              // Layer index (layer_idx)
+    bool b_max_frequency = 3;         // Value of bMax_frequency
+    int64 last_updated_step = 4;      // Last update step
+    int64 timestamp = 5;              // Timestamp
+    bool is_active = 6;               // Whether the worker is active
 }
 
 // ============================================================
-// 新增：显存爆炸(OOM)上报及等待时间协商相关消息定义
+// Added: Message definitions for VRAM OOM reporting and wait-time negotiation
 // ============================================================
 
-// 显存溢出上报请求
+// VRAM OOM report request
 message OomReportRequest {
-    string worker_id = 1;             // 发生 OOM 的客户端 ID
-    int32 block_idx = 2;              // 发生 OOM 时的块索引
-    int64 step = 3;                   // 当前训练步骤
-    int64 timestamp = 4;              // 发起请求的时间戳
-    
-    // 显存状态信息
-    float current_vram_usage_gb = 5;  // 当前显存使用量 (GB)
-    float total_vram_gb = 6;          // 总显存大小 (GB)
-    float requested_vram_gb = 7;      // 触发 OOM 时请求的显存大小 (GB)
-    
-    // 错误与上下文信息
-    string error_message = 8;         // 具体的 OOM 错误信息 (如 CUDA out of memory)
-    string layer_name = 9;            // 发生 OOM 的层名称或标识 (可选)
-    
-    // 客户端期望的等待时间 (毫秒)
-    int64 requested_wait_time_ms = 10; 
+    string worker_id = 1;             // ID of the client that encountered the OOM
+    int32 block_idx = 2;              // Block index where the OOM occurred
+    int64 step = 3;                   // Current training step
+    int64 timestamp = 4;              // Timestamp when the request was initiated
+
+    // VRAM status information
+    float current_vram_usage_gb = 5;  // Current VRAM usage (GB)
+    float total_vram_gb = 6;          // Total VRAM capacity (GB)
+    float requested_vram_gb = 7;      // Amount of VRAM requested when the OOM was triggered (GB)
+
+    // Error and context information
+    string error_message = 8;         // Detailed OOM error message (for example, CUDA out of memory)
+    string layer_name = 9;            // Name or identifier of the layer where the OOM occurred (optional)
+
+    // Wait time requested by the client (milliseconds)
+    int64 requested_wait_time_ms = 10;
 }
 
-// 显存溢出上报响应
+// VRAM OOM report response
 message OomReportResponse {
-    bool success = 1;                 // 服务端是否成功接收并处理
-    string message = 2;               // 响应消息或全局调度指令
-    
-    // 服务端分配的等待时间 (毫秒)
-    // 客户端收到后应暂停训练/重试，等待该时间后再继续
-    int64 assigned_wait_time_ms = 3;  
-    
-    // 服务端建议的恢复策略
-    OomRecoveryStrategy recovery_strategy = 4; 
-    
-    // 响应时间戳
-    int64 timestamp = 5;              
+    bool success = 1;                 // Whether the server successfully received and processed the report
+    string message = 2;               // Response message or global scheduling instruction
+
+    // Wait time assigned by the server (milliseconds)
+    // The client should pause training or retries, then resume after this interval
+    int64 assigned_wait_time_ms = 3;
+
+    // Recovery strategy recommended by the server
+    OomRecoveryStrategy recovery_strategy = 4;
+
+    // Response timestamp
+    int64 timestamp = 5;
 }
 
-// 恢复策略枚举
+// Recovery strategy enumeration
 enum OomRecoveryStrategy {
-    STRATEGY_UNKNOWN = 0;             // 未知/默认
-    STRATEGY_RETRY = 1;               // 等待后直接重试当前 Step
-    STRATEGY_REDUCE_BATCH = 2;        // 降低 Batch Size 后重试
-    STRATEGY_GRADIENT_CHECKPOINT = 3; // 开启/增加梯度检查点以节省显存
-    STRATEGY_ABORT = 4;               // 放弃当前 Step 或终止训练
+    STRATEGY_UNKNOWN = 0;             // Unknown/default
+    STRATEGY_RETRY = 1;               // Retry the current step after waiting
+    STRATEGY_REDUCE_BATCH = 2;        // Reduce the batch size and retry
+    STRATEGY_GRADIENT_CHECKPOINT = 3; // Enable or increase gradient checkpointing to save VRAM
+    STRATEGY_ABORT = 4;               // Abandon the current step or terminate training
 }
 
 
 // ============================================================
-// 新增：MoR 无 Loss 时清除梯度检查点缓存相关消息定义
+// Added: Message definitions for clearing the gradient checkpoint cache when MoR produces no loss
 // ============================================================
 
-// 清除梯度检查点缓存请求
+// Gradient checkpoint cache clear request
 message ClearGradientCacheRequest {
-    string worker_id = 1;             // 发起请求的客户端/中间服务器 ID
-    int32 block_idx = 2;              // 发生无 Loss 的块索引 (Block Index)
-    int64 step = 3;                   // 当前训练步骤 (Global Step)
-    int64 timestamp = 4;              // 发起请求的时间戳 (毫秒级)
-    
-    // 缓存标识与上下文
-    string layer_name = 5;            // 触发清除的层名称或 MoR 标识 (可选)
-    string reason = 6;                // 清除原因 (例如: "mor_no_loss", "skip_gradient_checkpoint")
+    string worker_id = 1;             // ID of the client or intermediate server initiating the request
+    int32 block_idx = 2;              // Block index where no loss was produced (Block Index)
+    int64 step = 3;                   // Current training step (Global Step)
+    int64 timestamp = 4;              // Timestamp when the request was initiated (milliseconds)
+
+    // Cache identifier and context
+    string layer_name = 5;            // Layer name or MoR identifier that triggered the clear operation (optional)
+    string reason = 6;                // Reason for clearing (for example, "mor_no_loss" or "skip_gradient_checkpoint")
 }
 
-// 清除梯度检查点缓存响应
+// Gradient checkpoint cache clear response
 message ClearGradientCacheResponse {
-    bool success = 1;                 // 服务端是否成功处理清除请求
-    string message = 2;               // 响应消息或详细状态
-    int32 cleared_count = 3;          // 实际清除的缓存条目数量 (便于调试与监控)
-    int64 timestamp = 4;              // 服务端处理完成的时间戳
+    bool success = 1;                 // Whether the server successfully processed the clear request
+    string message = 2;               // Response message or detailed status
+    int32 cleared_count = 3;          // Number of cache entries actually cleared (for debugging and monitoring)
+    int64 timestamp = 4;              // Timestamp when server-side processing completed
 }
