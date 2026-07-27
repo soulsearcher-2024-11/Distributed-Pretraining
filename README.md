@@ -10,7 +10,7 @@ machine: one server, two middle servers, and one client.
 
 - Linux x86_64
 - CPython 3.12
-- Four NVIDIA GPUs
+- Four RTX 4090 24GB
 - A CUDA driver/toolkit compatible with the selected PyTorch build
 - `tmux`
 
