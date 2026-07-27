@@ -142,7 +142,7 @@ class MandelbrotServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def SyncLayerParameters(self, request, context):
-        """新增：Layer参数同步相关方法
+        """Added: Methods related to Layer parameter synchronization.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
