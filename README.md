@@ -89,7 +89,7 @@ The most frequently used arguments are listed below (training essentials only):
 To list all available arguments:
 
 ```bash
-python scripts/train_pretrain_france_middle_server1.py -h
+python scripts/train_pretrain_france_middle_client1.py -h
 ```
 
 ### 3.2 Training Example
