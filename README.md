@@ -75,6 +75,8 @@ To test with a different dataset, modify the `--train_folder` argument in the sc
 
 ## 3. Distributed Training
 
+Due to business reasons, we have limited the model architecture to 26 blocks; this does not mean that only 26 blocks can be trained.
+
 ### 3.1 Commonly Used Parameters
 
 The most frequently used arguments are listed below (training essentials only):
